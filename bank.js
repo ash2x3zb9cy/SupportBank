@@ -47,12 +47,12 @@ class BankDB {
 
 	// get or create
 	getPerson(name) {
-		let r = this.people.get(name);
-		if(r === undefined) {
-			r = new Person(name, 0);
-			this.people.set(name, r);
+		let returnValue = this.people.get(name);
+		if(returnValue === undefined) {
+			returnValue = new Person(name, 0);
+			this.people.set(name, returnValue);
 		}
-		return r;
+		return returnValue;
 	}
 
 	addPerson(person) {
@@ -67,6 +67,23 @@ class BankDB {
 
 		from.transactions.push(trans);
 		to.transactions.push(trans);
+	}
+
+	getAllTransactions() {
+		const list = [];
+		const reducer = (acc, item)=>acc.push(item);
+		this.people.forEach((person, name, _)=>{
+			person.transactions.forEach(trans=>{
+				// Due to the way we are storing transactions (on People),
+				// Each transaction is listed twice, on the sender and reciever
+				// So, we need to only select each on once, by arbitrarily choosing
+				// to only read those to this user or from them
+				if(name === trans.to) {
+					list.push(trans);
+				}
+			})
+		});
+		return list;
 	}
 }
 

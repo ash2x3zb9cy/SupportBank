@@ -1,5 +1,7 @@
 const moment = require('moment');
-const parse = require('csv-parse/lib/sync');
+const csv_parse = require('csv-parse/lib/sync');
+const csv_stringify = require('csv-stringify/lib/sync');
+
 const log4js = require('log4js');
 log4js.configure({
 	appenders: {
@@ -27,6 +29,7 @@ const commands = [
 	{regex: /^List All$/, action: (_)=>listAll(db)},
 	{regex: /^List (.+)$/, action: (groups)=>listPerson(db, groups[1])},
 	{regex: /^Import File (.+)\.(.+)$/, action: (groups)=>parseFile(groups[1], groups[2])},
+	{regex: /^Export File (.+)\.(.+)$/, action: (groups)=>exportFile(groups[1], groups[2])},
 	{regex: /.?/, action: (_)=>console.error('unrecognised command')},
 ];
 
@@ -38,15 +41,18 @@ function listAll(db) {
 
 function listPerson(db, name) {
 	const person = db.getPerson(name);
-	if(person === undefined) return;
+	if(person === undefined) {
+		console.error('Person does not exist');
+		return;
+	};
 	for(let i = 0; i < person.transactions.length; i++) {
 		let trans = person.transactions[i];
 		
 		// "to x" / "from x"
 		toText = (trans.from === name)
 			// outgoing
-			? formatCurrency(-trans.amount) + ' to ' + trans.to
-			: formatCurrency(trans.amount) + ' from ' + trans.from;
+			? `${formatCurrency(-trans.amount)} to ${trans.to}`
+			: `${formatCurrency(trans.amount)} from ${trans.from}`;
 
 		console.log('%s: %s for "%s"',
 			trans.date.format('DD/MM/Y'),
@@ -68,6 +74,19 @@ function parseFile(name, extension) {
 		case 'xml':
 			readXML(name+'.'+extension);
 			break;
+		default:
+			console.error('unrecognised file type');
+			break;
+	}
+}
+
+function exportFile(name, extension) {
+	const list = db.getAllTransactions();
+	switch(extension) {
+		// TODO
+		case 'csv':
+		case 'json':
+		case 'xml':
 		default:
 			console.error('unrecognised file type');
 			break;
@@ -111,7 +130,7 @@ function readCSV(filename) {
 		if(e) {
 			throw e;
 		}
-		const res = parse(d, {
+		const res = csv_parse(d, {
 			cast: (arg, context) => {
 				switch(context.column) {
 					// amount
@@ -158,3 +177,5 @@ function readXML(filename) {
 }
 
 startPrompt();
+
+readXML('Transactions2012.xml');
