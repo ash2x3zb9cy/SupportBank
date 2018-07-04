@@ -1,5 +1,3 @@
-const moment = require('moment');
-
 const log4js = require('log4js');
 log4js.configure({
 	appenders: {
