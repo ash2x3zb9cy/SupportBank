@@ -1,4 +1,4 @@
 // TODO
 exports.formatCurrency = function(amount) {
-	return '£' + amount/100;
+	return '£' + amount.toFixed(2);
 }

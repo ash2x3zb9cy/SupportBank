@@ -25,7 +25,7 @@ class Transaction {
 			moment(j.Date),
 			j.FromAccount, j.ToAccount,
 			j.Narrative,
-			Math.round(Number(j.Amount)*100)
+			Number(j.Amount)
 		);
 	}
 
@@ -35,7 +35,7 @@ class Transaction {
 			x.Parties.To._text,
 			x.Parties.From._text,
 			x.Description._text,
-			Math.round(Number(x.Value._text)*100)
+			Number(x.Value._text)
 		);
 	}
 }

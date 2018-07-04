@@ -70,6 +70,8 @@ function exportFile(name, extension) {
 			exportDB.exportJSON(name+'.'+extension, db);
 			break;
 		case 'xml':
+			exportDB.exportXML(name+'.'+extension, db);
+			break;
 		default:
 			console.error('unrecognised file type');
 			break;

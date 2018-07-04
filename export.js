@@ -1,4 +1,5 @@
 const csv_stringify = require('csv-stringify/lib/sync');
+const xmljs = require('xml-js');
 
 const fs = require('fs');
 
@@ -12,7 +13,7 @@ const exportCSV = exports.exportCSV = (filename, db) => {
 			From: val.from, To: val.to,
 			Narrative: val.narrative,
 			Date: val.date.format('DD/MM/Y'),
-			Amount: val.amount/100,
+			Amount: val.amount.toFixed(2),
 		});
 	});
 
@@ -39,7 +40,7 @@ const exportJSON = exports.exportJSON = (filename, db) => {
 			FromAccount: val.from, ToAccount: val.to,
 			Narrative: val.narrative,
 			Date: val.date.format('Y-MM-DDTHH:mm:ss'),
-			Amount: val.amount/100,
+			Amount: val.amount.toFixed(2),
 		});
 	});
 
@@ -49,4 +50,26 @@ const exportJSON = exports.exportJSON = (filename, db) => {
 		}
 		console.log(`Database exported to ${filename}.`);
 	});
+}
+
+const exportXML = exports.exportXML = (filename, db) => {
+	
+	const trans = db.getAllTransactions();
+	const plainTransactions = [];
+
+	trans.forEach(val => {
+		plainTransactions.push({
+			FromAccount: val.from, ToAccount: val.to,
+			Narrative: val.narrative,
+			Date: val.date.format('Y-MM-DDTHH:mm:ss'),
+			Amount: val.amount.toFixed(2),
+		});
+	});
+
+	const string = xmljs.js2xml(plainTransactions, {
+		spaces: 2,
+		compact: true,
+	});
+
+	console.log(string);
 }

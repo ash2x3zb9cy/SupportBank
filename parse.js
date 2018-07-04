@@ -46,12 +46,12 @@ function readCSV(filename, db) {
 				switch(context.column) {
 					// amount
 					case 'Amount':
-						let num = Math.round(arg*100);
+						let num = Number(arg);
 						if(isNaN(num)) {
 							console.error('parse error on line %d, column %s', context.lines, context.column);
 							return 0;
 						}
-						return Math.round(arg*100);
+						return num;
 					case 'Date':
 						return moment(arg, 'DD/MM/Y');
 					default:
@@ -75,6 +75,7 @@ function readXML(filename, db) {
 			throw e;
 		}
 		const obj = xmljs.xml2js(d, {compact:true, spaces:1});
+		console.log(obj);
 		const arr = obj.TransactionList.SupportTransaction
 		for(let i = 0; i < arr.length; i++) {
 			let trans = bank.Transaction.fromXML(arr[i]);
