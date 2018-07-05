@@ -1,25 +1,95 @@
 const moment = require('moment');
 
-const {index} = require('./index');
 const bank = require('./bank');
 
-test('Adding a person', ()=>{
-	const person = new bank.Person('Ash', 99);
+test('BankDB::getPerson default', () => {
 	const db = new bank.BankDB();
-	db.addPerson(person);
-	expect(db.getPerson('Ash')).toBe(person);
+	const ash = db.getPerson('Ash');
+	expect(ash.balance).toBe(0);
+	expect(ash.transactions).toEqual([]);
+	expect(ash.name).toBe('Ash');
 });
 
-test('Transaction', ()=>{
-	const ash = new bank.Person('Ash', 0);
-	const ash2 = new bank.Person('ash2', 1000);
+test('BankDB::addTransaction', () => {
 	const db = new bank.BankDB();
-	db.addPerson(ash);
-	db.addPerson(ash2);
+	const trans = new bank.Transaction(
+		moment(),
+		'Ash',
+		'Not Ash',
+		'Testing',
+		10
+	);
 
-	const trans = new bank.Transaction(moment(), 'Ash', 'ash2', 'For testing', 100);
 	db.addTransaction(trans);
 
-	expect(db.getPerson('Ash').balance).toBe(-100);
-	expect(db.getPerson('ash2').balance).toBe(1100);
+	const ash = db.getPerson('Ash');
+	const nash = db.getPerson('Not Ash');
+
+	expect(ash.balance).toBe(-10);
+	expect(nash.balance).toBe(10);
+
+	expect(ash.transactions).toEqual([trans]);
+	expect(nash.transactions).toEqual([trans]);
+});
+
+test('BankDB::getAllTransactions', () => {
+	const db = new bank.BankDB();
+	const a = new bank.Transaction(
+		moment(),
+		'Ash',
+		'Not Ash',
+		'Testing',
+		10
+	);
+	const b = new bank.Transaction(
+		moment(),
+		'Ash',
+		'Still Not Ash',
+		'Testing',
+		100
+	);
+	db.addTransaction(a);
+	db.addTransaction(b);
+	const transList = db.getAllTransactions();
+	expect(transList).toHaveLength(2);
+	expect(transList).toContain(a);
+	expect(transList).toContain(b);
+});
+
+test('Transaction.fromCSV', () => {
+	const date = moment();
+	const correctTrans = new bank.Transaction(
+		date,
+		'Ash',
+		'Not Ash',
+		'Testing',
+		100
+	);
+	const csvtrans = {
+		Date: date,
+		From: 'Ash',
+		To: 'Not Ash',
+		Narrative: 'Testing',
+		Amount: 100
+	};
+	expect(bank.Transaction.fromCSV(csvtrans)).toEqual(correctTrans);
+});
+
+test('Transaction.fromOldJSON', () => {
+	const date = moment('2018-04-02T00:00:00');
+	const correctTrans = new bank.Transaction(
+		date,
+		'Ash',
+		'Not Ash',
+		'Testing',
+		100
+	);
+	const csvtrans = JSON.parse(`{
+    "Date": "2018-04-02T00:00:00",
+    "FromAccount": "Ash",
+    "ToAccount": "Not Ash",
+    "Narrative": "Testing",
+    "Amount": 100
+}`);
+	expect(bank.Transaction.fromOldJSON(csvtrans)).toEqual(correctTrans);
 });
