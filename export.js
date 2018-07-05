@@ -9,7 +9,8 @@ const exportCSV = exports.exportCSV = (filename, db) => {
 
 	trans.forEach(val => {
 		plainTransactions.push({
-			From: val.from, To: val.to,
+			From: val.from,
+			To: val.to,
 			Narrative: val.narrative,
 			Date: val.date.format('DD/MM/Y'),
 			Amount: val.amount.toFixed(2),
@@ -21,9 +22,9 @@ const exportCSV = exports.exportCSV = (filename, db) => {
 		columns: ['Date', 'From', 'To', 'Narrative', 'Amount'],
 	});
 
-	fs.writeFile(filename, string, e => {
-		if (e) {
-			throw e;
+	fs.writeFile(filename, string, error => {
+		if (error) {
+			throw error;
 		}
 		console.log(`Database exported to ${filename}.`);
 	});
@@ -43,9 +44,9 @@ const exportJSON = exports.exportJSON = (filename, db) => {
 		});
 	});
 
-	fs.writeFile(filename, JSON.stringify(plainTransactions, undefined, 2), e => {
-		if (e) {
-			throw e;
+	fs.writeFile(filename, JSON.stringify(plainTransactions, undefined, 2), error => {
+		if (error) {
+			throw error;
 		}
 		console.log(`Database exported to ${filename}.`);
 	});
@@ -56,26 +57,28 @@ const exportXML = exports.exportXML = (filename, db) => {
 	const trans = db.getAllTransactions();
 
 	let string = '<?xml version="1.0" encoding="utf-8"?>\n';
-	string += '<TransactionList>\n';
+	string.concat('<TransactionList>\n');
 
 	trans.forEach(val => {
-		// TODO: TEST THIS CHECK THIS AAA
+		// TODO: implement moment->ExcelDate in a library
 		const date = (Math.round(val.date.valueOf()/(26*60*60*1000)))+(25567+2);
 		
-		string += `  <SupportTransaction Date="${date}">\n`;
-		string += `    <Description>${val.narrative}</Description>\n`;
-		string += `    <Value>${val.amount.toFixed(2)}</Value>`;
-		string += '    <Parties>\n';
-		string += `      <From>${val.from}</From>\n`;
-		string += `      <To>${val.to}</To>\n`;
-		string += '    </Parties>\n  </SupportTransaction>\n';
+		string.concat(`  <SupportTransaction Date="${date}">\n`)
+			.concat(`    <Description>${val.narrative}</Description>\n`)
+			.concat(`    <Value>${val.amount.toFixed(2)}</Value>`)
+			.concat('    <Parties>\n')
+			.concat(`      <From>${val.from}</From>\n`)
+			.concat(`      <To>${val.to}</To>\n`)
+			.concat('    </Parties>\n  </SupportTransaction>\n');
+		
+
 	});
 
-	string += '</TransactionList>'
+	string.concat('</TransactionList>');
 
-	fs.writeFile(filename, string, e => {
-		if(e) {
-			throw e;
+	fs.writeFile(filename, string, error => {
+		if(error) {
+			throw error;
 		}
 		console.log(`Database exported to ${filename}.`);
 	});

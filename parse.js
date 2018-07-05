@@ -9,13 +9,13 @@ const bank = require('./bank');
 const parseFile = exports.parseFile = (name, extension, db) => {
 	switch(extension) {
 		case 'csv':
-			readCSV(name+'.'+extension, db);
+			readCSV(`${name}.${extension}`, db);
 			break;
 		case 'json':
-			readJSON(name+'.'+extension, db);
+			readJSON(`${name}.${extension}`, db);
 			break;
 		case 'xml':
-			readXML(name+'.'+extension, db);
+			readXML(`${name}.${extension}`, db);
 			break;
 		default:
 			console.error('unrecognised file type');
@@ -24,24 +24,22 @@ const parseFile = exports.parseFile = (name, extension, db) => {
 }
 
 function readJSON(filename, db) {
-	fs.readFile(filename, (e, d)=> {
-		if(e) {
-			throw e;
+	fs.readFile(filename, (error, data) => {
+		if(error) {
+			throw error;
 		}
-		let data = JSON.parse(d);
-		for(let i = 0; i < data.length; i++) {
-			let datum = data[i];
-			db.addTransaction(bank.Transaction.fromOldJSON(datum));
-		}
+		JSON.parse(data).forEach(e => {
+			db.addTransaction(bank.Transaction.fromOldJSON(e));
+		});
 	})
 }
 
 function readCSV(filename, db) {
-	fs.readFile(filename, (e, d)=>{
-		if(e) {
-			throw e;
+	fs.readFile(filename, (error, data)=>{
+		if(error) {
+			throw error;
 		}
-		const res = csv_parse(d, {
+		const res = csv_parse(data, {
 			cast: (arg, context) => {
 				switch(context.column) {
 					// amount
@@ -62,25 +60,24 @@ function readCSV(filename, db) {
 			columns: true,
 		});
 
-		for(let i = 0; i < res.length; i++) {
-			db.addTransaction(bank.Transaction.fromCSV(res[i]));
-		}
+		res.forEach(e => {
+			db.addTransaction(bank.Transaction.fromCSV(e));
+		});
 
 	});
 }
 
 function readXML(filename, db) {
-	fs.readFile(filename, (e, d)=>{
-		if(e) {
-			throw e;
+	fs.readFile(filename, (error, data)=>{
+		if(error) {
+			throw error;
 		}
-		const obj = xmljs.xml2js(d, {compact:true, spaces:1});
-		console.log(obj);
-		const arr = obj.TransactionList.SupportTransaction
-		for(let i = 0; i < arr.length; i++) {
-			let trans = bank.Transaction.fromXML(arr[i]);
+		const obj = xmljs.xml2js(data, {compact:true, spaces:1});
+
+		obj.TransactionList.SupportTransaction.forEach(e => {
+			let trans = bank.Transaction.fromXML(e);
 			db.addTransaction(trans);
-		}
+		})
 
 	});
 }

@@ -23,11 +23,11 @@ const db = new bank.BankDB();
 const {formatCurrency} = require('./utility');
 
 const commands = [
-	{regex: /^List All$/, action: (_)=>listAll(db)},
-	{regex: /^List (.+)$/, action: (groups)=>listPerson(db, groups[1])},
-	{regex: /^Import File (.+)\.(.+)$/, action: (groups)=>parse.parseFile(groups[1], groups[2], db)},
-	{regex: /^Export File (.+)\.(.+)$/, action: (groups)=>exportFile(groups[1], groups[2])},
-	{regex: /.?/, action: (_)=>console.error('unrecognised command')},
+	{regex: /^List All$/, action: (_) => listAll(db)},
+	{regex: /^List (.+)$/, action: (groups) => listPerson(db, groups[1])},
+	{regex: /^Import File (.+)\.(.+)$/, action: (groups) => parse.parseFile(groups[1], groups[2], db)},
+	{regex: /^Export File (.+)\.(.+)$/, action: (groups) => exportFile(groups[1], groups[2])},
+	{regex: /.?/, action: (_) => console.error('unrecognised command')},
 ];
 
 function listAll(db) {
@@ -45,7 +45,7 @@ function listPerson(db, name) {
 	for(let i = 0; i < person.transactions.length; i++) {
 		let trans = person.transactions[i];
 		
-		// "to x" / "from x"
+		// "to x" / "from x" (we don't need to show that it's from/to the given user)
 		toText = (trans.from === name)
 			// outgoing
 			? `${formatCurrency(-trans.amount)} to ${trans.to}`
@@ -62,15 +62,14 @@ function listPerson(db, name) {
 function exportFile(name, extension) {
 	const list = db.getAllTransactions();
 	switch(extension) {
-		// TODO
 		case 'csv':
-			exportDB.exportCSV(name+'.'+extension, db);
+			exportDB.exportCSV(`${name}.${extension}`, db);
 			break;
 		case 'json':
-			exportDB.exportJSON(name+'.'+extension, db);
+			exportDB.exportJSON(`${name}.${extension}`, db);
 			break;
 		case 'xml':
-			exportDB.exportXML(name+'.'+extension, db);
+			exportDB.exportXML(`${name}.${extension}`, db);
 			break;
 		default:
 			console.error('unrecognised file type');
@@ -81,7 +80,7 @@ function exportFile(name, extension) {
 function startPrompt() {
 	rl.setPrompt('SupportBank>');
 	rl.prompt();
-	rl.on('line', (answer)=> {
+	rl.on('line', (answer) => {
 		for(let i = 0; i < commands.length; i++) {
 			let command = commands[i];
 			let match = answer.match(command.regex);
@@ -95,5 +94,5 @@ function startPrompt() {
 		rl.prompt();
 	});
 }
-parse.parseFile('Transactions2014', 'csv', db);
+
 startPrompt();

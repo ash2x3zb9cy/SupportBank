@@ -1,8 +1,6 @@
 const moment = require('moment');
 const {getJsDateFromExcel} = require('excel-date-to-js');
 
-// a class is not strictly necessary here -
-// could just make our personDB map from String->Number
 class Person {
 	constructor(name='', balance=0) {
 		this.name = name;
@@ -13,33 +11,44 @@ class Person {
 
 class Transaction {
 	constructor(date, from, to, narrative, amount) {
-		this.date = date; this.from = from; this.to = to; this.narrative = narrative; this.amount = amount;
+		this.date = date;
+		this.from = from;
+		this.to = to;
+		this.narrative = narrative;
+		this.amount = amount;
 	}
 
-	static fromCSV(o) {
-		return new Transaction(o.Date, o.From, o.To, o.Narrative, o.Amount);
-	}
-
-	static fromOldJSON(j) {
+	static fromCSV(csvParsedObj) {
 		return new Transaction(
-			moment(j.Date),
-			j.FromAccount, j.ToAccount,
-			j.Narrative,
-			Number(j.Amount)
+			csvParsedObj.Date,
+			csvParsedObj.From,
+			csvParsedObj.To,
+			csvParsedObj.Narrative,
+			csvParsedObj.Amount
 		);
 	}
 
-	static fromXML(x) {
+	static fromOldJSON(jsonParsedObj) {
 		return new Transaction(
-			moment(getJsDateFromExcel(x._attributes.Date)),
-			x.Parties.To._text,
-			x.Parties.From._text,
-			x.Description._text,
-			Number(x.Value._text)
+			moment(jsonParsedObj.Date),
+			jsonParsedObj.FromAccount, jsonParsedObj.ToAccount,
+			jsonParsedObj.Narrative,
+			Number(jsonParsedObj.Amount)
+		);
+	}
+
+	static fromXML(xmlParsedObj) {
+		return new Transaction(
+			moment(getJsDateFromExcel(xmlParsedObj._attributes.Date)),
+			xmlParsedObj.Parties.To._text,
+			xmlParsedObj.Parties.From._text,
+			xmlParsedObj.Description._text,
+			Number(xmlParsedObj.Value._text)
 		);
 	}
 }
 
+// TODO: Reimplmement .people using a plain object
 class BankDB {
 	constructor() {
 		this.people = new Map();
@@ -49,16 +58,13 @@ class BankDB {
 	getPerson(name) {
 		let returnValue = this.people.get(name);
 		if(returnValue === undefined) {
-			returnValue = new Person(name, 0);
+			returnValue = new Person(name);
 			this.people.set(name, returnValue);
 		}
 		return returnValue;
 	}
 
-	addPerson(person) {
-		this.people.set(person.name, person);
-	}
-
+	// input: Transaction object
 	addTransaction(trans) {
 		const from = this.getPerson(trans.from);
 		const to = this.getPerson(trans.to);
@@ -71,9 +77,8 @@ class BankDB {
 
 	getAllTransactions() {
 		const list = [];
-		const reducer = (acc, item)=>acc.push(item);
-		this.people.forEach((person, name, _)=>{
-			person.transactions.forEach(trans=>{
+		this.people.forEach((person, name, _) => {
+			person.transactions.forEach(trans => {
 				// Due to the way we are storing transactions (on People),
 				// Each transaction is listed twice, on the sender and reciever
 				// So, we need to only select each on once, by arbitrarily choosing
