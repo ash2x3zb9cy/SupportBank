@@ -84,12 +84,12 @@ test('Transaction.fromOldJSON', () => {
 		'Testing',
 		100
 	);
-	const csvtrans = JSON.parse(`{
+	const jsontrans = JSON.parse(`{
     "Date": "2018-04-02T00:00:00",
     "FromAccount": "Ash",
     "ToAccount": "Not Ash",
     "Narrative": "Testing",
     "Amount": 100
 }`);
-	expect(bank.Transaction.fromOldJSON(csvtrans)).toEqual(correctTrans);
+	expect(bank.Transaction.fromOldJSON(jsontrans)).toEqual(correctTrans);
 });
