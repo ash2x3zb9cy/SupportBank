@@ -53,19 +53,17 @@ const exportJSON = exports.exportJSON = (filename, db) => {
 }
 
 const exportXML = exports.exportXML = (filename, db) => {
-	
 	const trans = db.getAllTransactions();
 
 	let string = '<?xml version="1.0" encoding="utf-8"?>\n';
-	string.concat('<TransactionList>\n');
+	string = string.concat('<TransactionList>\n');
 
 	trans.forEach(val => {
-		// TODO: implement moment->ExcelDate in a library
-		const date = (Math.round(val.date.valueOf()/(26*60*60*1000)))+(25567+2);
+		const date = val.date.toOADate();
 		
-		string.concat(`  <SupportTransaction Date="${date}">\n`)
+		string = string.concat(`  <SupportTransaction Date="${date}">\n`)
 			.concat(`    <Description>${val.narrative}</Description>\n`)
-			.concat(`    <Value>${val.amount.toFixed(2)}</Value>`)
+			.concat(`    <Value>${val.amount.toFixed(2)}</Value>\n`)
 			.concat('    <Parties>\n')
 			.concat(`      <From>${val.from}</From>\n`)
 			.concat(`      <To>${val.to}</To>\n`)
@@ -74,7 +72,7 @@ const exportXML = exports.exportXML = (filename, db) => {
 
 	});
 
-	string.concat('</TransactionList>');
+	string = string.concat('</TransactionList>');
 
 	fs.writeFile(filename, string, error => {
 		if(error) {

@@ -111,3 +111,11 @@ test('Transaction.fromXML', () => {
 	expect(trans).toHaveProperty('narrative', 'Testing');
 	expect(trans.date.toISOString()).toEqual(date.toISOString());
 });
+
+// this test fails :(
+test('moment-msdate implements leap year bug', () => {
+	const date1 = moment('1900-02-28');
+	const date2 = moment('1900-03-01');
+	expect(date1.toOADate()).toBe(59);
+	expect(date2.toOADate() - date1.toOADate()).toBe(2);
+});
