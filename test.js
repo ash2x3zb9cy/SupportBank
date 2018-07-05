@@ -1,4 +1,4 @@
-const moment = require('moment');
+const moment = require('moment-msdate');
 
 const bank = require('./bank');
 
@@ -92,4 +92,22 @@ test('Transaction.fromOldJSON', () => {
     "Amount": 100
 }`);
 	expect(bank.Transaction.fromOldJSON(jsontrans)).toEqual(correctTrans);
+});
+
+test('Transaction.fromXML', () => {
+	const date = moment('2018-04-02T00:00:00.000Z');
+	const xmltrans = {
+		_attributes: { Date: '43192' },
+		Parties: {
+			From: { _text: 'Ash' },
+			To: { _text: 'Not Ash' },
+		},
+		Description: { _text: 'Testing' },
+		Value: { _text: '100' }
+	};
+	const trans = bank.Transaction.fromXML(xmltrans);
+	expect(trans).toHaveProperty('from', 'Ash');
+	expect(trans).toHaveProperty('to', 'Not Ash');
+	expect(trans).toHaveProperty('narrative', 'Testing');
+	expect(trans.date.toISOString()).toEqual(date.toISOString());
 });
