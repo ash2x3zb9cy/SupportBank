@@ -24,7 +24,7 @@
     "csv-stringify": "^3.1.1",
     "excel-date-to-js": "^1.0.0",
     "log4js": "^2.10.0",
-    "moment": "^2.22.2",
+    "moment-msdate": "^2.0.1",
     "xml-js": "^1.6.7"
   }
 }

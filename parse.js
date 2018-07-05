@@ -1,6 +1,6 @@
 const csv_parse = require('csv-parse/lib/sync');
 const xmljs = require('xml-js');
-const moment = require('moment');
+const moment = require('moment-msdate');
 
 const fs = require('fs');
 
