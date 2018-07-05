@@ -1,5 +1,4 @@
 const csv_stringify = require('csv-stringify/lib/sync');
-const xmljs = require('xml-js');
 
 const fs = require('fs');
 
@@ -55,21 +54,29 @@ const exportJSON = exports.exportJSON = (filename, db) => {
 const exportXML = exports.exportXML = (filename, db) => {
 	
 	const trans = db.getAllTransactions();
-	const plainTransactions = [];
+
+	let string = '<?xml version="1.0" encoding="utf-8"?>\n';
+	string += '<TransactionList>\n';
 
 	trans.forEach(val => {
-		plainTransactions.push({
-			FromAccount: val.from, ToAccount: val.to,
-			Narrative: val.narrative,
-			Date: val.date.format('Y-MM-DDTHH:mm:ss'),
-			Amount: val.amount.toFixed(2),
-		});
+		// TODO: TEST THIS CHECK THIS AAA
+		const date = (Math.round(val.date.valueOf()/(26*60*60*1000)))+(25567+2);
+		
+		string += `  <SupportTransaction Date="${date}">\n`;
+		string += `    <Description>${val.narrative}</Description>\n`;
+		string += `    <Value>${val.amount.toFixed(2)}</Value>`;
+		string += '    <Parties>\n';
+		string += `      <From>${val.from}</From>\n`;
+		string += `      <To>${val.to}</To>\n`;
+		string += '    </Parties>\n  </SupportTransaction>\n';
 	});
 
-	const string = xmljs.js2xml(plainTransactions, {
-		spaces: 2,
-		compact: true,
-	});
+	string += '</TransactionList>'
 
-	console.log(string);
+	fs.writeFile(filename, string, e => {
+		if(e) {
+			throw e;
+		}
+		console.log(`Database exported to ${filename}.`);
+	});
 }
