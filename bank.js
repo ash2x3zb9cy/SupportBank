@@ -1,4 +1,4 @@
-const moment = require('moment');
+const moment = require('moment-msdate');
 const {getJsDateFromExcel} = require('excel-date-to-js');
 
 class Person {
@@ -40,8 +40,8 @@ class Transaction {
 	static fromXML(xmlParsedObj) {
 		return new Transaction(
 			moment(getJsDateFromExcel(xmlParsedObj._attributes.Date)),
-			xmlParsedObj.Parties.To._text,
 			xmlParsedObj.Parties.From._text,
+			xmlParsedObj.Parties.To._text,
 			xmlParsedObj.Description._text,
 			Number(xmlParsedObj.Value._text)
 		);
