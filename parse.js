@@ -42,7 +42,6 @@ function readCSV(filename, db) {
 		const res = csv_parse(data, {
 			cast: (arg, context) => {
 				switch(context.column) {
-					// amount
 					case 'Amount':
 						let num = Number(arg);
 						if(isNaN(num)) {
